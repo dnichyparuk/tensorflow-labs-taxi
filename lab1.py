@@ -14,6 +14,7 @@ df_train = pd.read_csv('./taxi-train.csv', header = None, names = CSV_COLUMNS)
 df_valid = pd.read_csv('./taxi-valid.csv', header = None, names = CSV_COLUMNS)
 df_test = pd.read_csv('./taxi-test.csv', header = None, names = CSV_COLUMNS)
 
+#Train and eval input functions to read from Pandas Dataframe 
 def make_train_input_fn(df, num_epochs):
   return tf.estimator.inputs.pandas_input_fn(
     x = df,
@@ -42,10 +43,12 @@ def make_prediction_input_fn(df):
     queue_capacity = 1000
   )
 
+#Create feature columns for estimator
 def make_feature_cols():
   input_columns = [tf.feature_column.numeric_column(k) for k in FEATURES]
   return input_columns
 
+#Linear Regression with tf.Estimator framework 
 tf.logging.set_verbosity(tf.logging.INFO)
 
 OUTDIR = 'taxi_trained'
@@ -55,7 +58,7 @@ model = tf.estimator.LinearRegressor(
       feature_columns = make_feature_cols(), model_dir = OUTDIR)
 
 model.train(input_fn = make_train_input_fn(df_train, num_epochs = 10))
-
+#------
 def print_rmse(model, df):
   metrics = model.evaluate(input_fn = make_eval_input_fn(df))
   print('RMSE on dataset = {}'.format(np.sqrt(metrics['average_loss'])))
@@ -65,6 +68,7 @@ predictions = model.predict(input_fn = make_prediction_input_fn(df_test))
 for items in predictions:
   print(items)
 
+#Deep Neural Network regression 
 tf.logging.set_verbosity(tf.logging.INFO)
 shutil.rmtree(OUTDIR, ignore_errors = True) # start fresh each time
 model = tf.estimator.DNNRegressor(hidden_units = [32, 8, 2],
